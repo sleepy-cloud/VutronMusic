@@ -125,6 +125,14 @@ export const useStreamMusicStore = defineStore(
       window.mainApi?.send('scrobbleStreamMusic', { platform: service, id: track.id })
     }
 
+    const nowPlaying = (track: Track) => {
+      if (!enable.value) return
+      const service = track.source as serviceName
+      if (service === 'navidrome') {
+        window.mainApi?.send('nowPlayingStreamMusic', { platform: service, id: track.id })
+      }
+    }
+
     const getStreamLyric = async (track: Track) => {
       if (!enable.value) return []
       const service = track.source as serviceName
@@ -203,6 +211,7 @@ export const useStreamMusicStore = defineStore(
       groundBy,
       message,
       scrobble,
+      nowPlaying,
       getStreamLyric,
       checkStreamStatus,
       getStreamPic,

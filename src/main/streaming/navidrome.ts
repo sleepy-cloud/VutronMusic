@@ -120,7 +120,8 @@ interface NavidromeImpl {
   createPlaylist: (name: string) => Promise<{ status: string; pid: any }>
   deletePlaylist: (id: string) => Promise<boolean>
   addTracksToPlaylist: (op: string, playlistId: string, ids: string[]) => Promise<boolean>
-  scrobble: (id: string) => void
+  scrobble: (id: string, time?: number) => void
+  nowPlaying: (id: string) => void
   likeATrack: (operation: 'unstar' | 'star', id: string) => Promise<boolean>
 }
 
@@ -315,8 +316,22 @@ class Navidrome implements NavidromeImpl {
     return isSuccess
   }
 
-  scrobble(id: string) {
-    fetch(getRestUrl('scrobble', { id }))
+  nowPlaying(id: string) {
+    const url = getRestUrl('scrobble', { id, submission: 'false' })
+    fetch(url).catch((error) => {
+      console.error('Failed to update now playing on Navidrome:', error)
+    })
+  }
+
+  scrobble(id: string, time?: number) {
+    const params: Record<string, string> = { id }
+    if (time !== undefined) {
+      params.time = Math.floor(time).toString()
+    }
+    const url = getRestUrl('scrobble', params)
+    fetch(url).catch((error) => {
+      console.error('Failed to scrobble to Navidrome:', error)
+    })
   }
 }
 

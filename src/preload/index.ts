@@ -46,6 +46,7 @@ const mainAvailChannels: string[] = [
   'updateStreamPlaylistInfo',
   'logoutStreamMusic',
   'scrobbleStreamMusic',
+  'nowPlayingStreamMusic',
   'likeAStreamTrack',
   'systemPing',
   'get-stream-account',

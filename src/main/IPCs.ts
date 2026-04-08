@@ -972,11 +972,17 @@ async function initStreaming() {
 
   ipcMain.on('scrobbleStreamMusic', (event, data) => {
     if (data.platform === 'navidrome') {
-      navidrome.scrobble(data.id)
+      navidrome.scrobble(data.id, data.time)
     } else if (data.platform === 'emby') {
       emby.scrobble(data.id)
     } else if (data.platform === 'jellyfin') {
       jellyfin.scrobble(data.id)
+    }
+  })
+
+  ipcMain.on('nowPlayingStreamMusic', (event, data) => {
+    if (data.platform === 'navidrome') {
+      navidrome.nowPlaying(data.id)
     }
   })
 

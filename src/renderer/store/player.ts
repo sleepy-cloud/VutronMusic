@@ -97,6 +97,7 @@ export const usePlayerStore = defineStore(
       localMusicStore
     const {
       scrobble: scrobbleStream,
+      nowPlaying: nowPlayingStream,
       fetchStreamMusic,
       getStreamLyric,
       getStreamPic,
@@ -811,6 +812,8 @@ export const usePlayerStore = defineStore(
         scrobbleFM(currentTrack.value, seek.value)
       }
 
+      stopNowPlayingTimer()
+
       await smoothGain(0, 0)
       return getLocalMusic(trackID as number).then(async (track) => {
         if (!track) {
@@ -1033,6 +1036,31 @@ export const usePlayerStore = defineStore(
       window.mainApi?.send('pauseDiscordPresence', cloneDeep(track))
     }
 
+    let nowPlayingTimer: ReturnType<typeof setInterval> | null = null
+
+    const startNowPlayingTimer = () => {
+      if (currentTrack.value?.source !== 'navidrome') return
+
+      if (nowPlayingTimer) {
+        clearInterval(nowPlayingTimer)
+      }
+
+      nowPlayingStream(currentTrack.value!)
+
+      nowPlayingTimer = setInterval(() => {
+        if (playing.value && currentTrack.value?.source === 'navidrome') {
+          nowPlayingStream(currentTrack.value!)
+        }
+      }, 10000)
+    }
+
+    const stopNowPlayingTimer = () => {
+      if (nowPlayingTimer) {
+        clearInterval(nowPlayingTimer)
+        nowPlayingTimer = null
+      }
+    }
+
     const play = async () => {
       if (!audioNodes.audio) return
 
@@ -1073,6 +1101,7 @@ export const usePlayerStore = defineStore(
 
         playDiscordPresence(currentTrack.value!, audioNodes.audio.currentTime)
         updateNowPlaying()
+        startNowPlayingTimer()
       } catch (error) {
         if (currentTrack.value?.cache) {
           const isOk = (await window.mainApi?.invoke(
@@ -1104,6 +1133,7 @@ export const usePlayerStore = defineStore(
       }
       document.title = title.value
       pauseDiscordPresence(currentTrack.value!)
+      stopNowPlayingTimer()
     }
 
     const playOrPause = async () => {
@@ -1756,6 +1786,7 @@ export const usePlayerStore = defineStore(
     onBeforeUnmount(() => {
       progress.value = audioNodes.audio?.currentTime || 0
       if (pic.value.startsWith('blob:')) URL.revokeObjectURL(pic.value)
+      stopNowPlayingTimer()
       destroAudioNode()
     })
 
